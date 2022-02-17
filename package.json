@@ -1,11 +1,11 @@
 {
   "name": "generator-alfresco-enterprise-docker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Docker Compose template generator for Alfresco Enterprise",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aborroy/alfresco-enterprise-docker.git"
+    "url": "git+https://github.com/AlfrescoLabs/alfresco-enterprise-docker.git"
   },
   "keywords": [
     "alfresco",
@@ -15,9 +15,9 @@
   "author": "Angel Borroy",
   "license": "LGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/aborroy/alfresco-enterprise-docker/issues"
+    "url": "https://github.com/AlfrescoLabs/alfresco-enterprise-docker/issues"
   },
-  "homepage": "https://github.com/aborroy/alfresco-enterprise-docker#readme",
+  "homepage": "https://github.com/AlfrescoLabs/alfresco-enterprise-docker#readme",
   "dependencies": {
     "yeoman-generator": "^5.6.1"
   }
