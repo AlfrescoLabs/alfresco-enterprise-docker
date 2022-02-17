@@ -1,0 +1,5 @@
+volumes:
+  shared-file-store-volume:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

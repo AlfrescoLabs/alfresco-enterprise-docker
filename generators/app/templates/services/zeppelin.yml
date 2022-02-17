@@ -1,0 +1,4 @@
+zeppelin:
+    image: quay.io/alfresco/insight-zeppelin:${SEARCH_TAG}
+    ports:
+        - 9091:9090
