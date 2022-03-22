@@ -3,8 +3,13 @@ const Generator = require('yeoman-generator');
 var banner = require('./banner');
 var fs = require('fs');
 
-module.exports = class extends Generator {
+/**
+ * This module provides a Yeoman Generator to produce 'docker-compose.yml' 
+ * configurations for Alfresco Enterprise deployments
+ */
+ module.exports = class extends Generator {
 
+    // Initial messages
     initializing() {
 
         this.log('--------------------');
@@ -14,6 +19,7 @@ module.exports = class extends Generator {
 
     }
 
+    // User options
     prompting() {
 
         if (!this.options['skip-install-message']) {
@@ -25,8 +31,8 @@ module.exports = class extends Generator {
                 type: 'list',
                 name: 'acsVersion',
                 message: 'Which ACS version do you want to use?',
-                choices: [ '7.1' ],
-                default: '7.1'
+                choices: [ '7.1', '7.2' ],
+                default: '7.2'
             },
             {
               type: 'list',
@@ -85,12 +91,13 @@ module.exports = class extends Generator {
 
         // Prompt only for parameters not passed by command line
         return this.prompt(filteredPrompts).then(props => {
-        this.props = props;
-        Object.assign(props, commandProps);
+            this.props = props;
+            Object.assign(props, commandProps);
         });
 
     }
 
+    // Producing 'docker-compose.yml' output file and temporary partial services
     writing() {
 
         this.fs.copyTpl(
@@ -98,56 +105,69 @@ module.exports = class extends Generator {
             this.destinationPath('.env')
         )
 
+        var secretPassword = Math.random().toString(36).slice(2);
+
         this.fs.copyTpl(
             this.templatePath(this.props.acsVersion + '/docker-compose.yml'),
             this.destinationPath('docker-compose.yml'), {
                 transform: this.props.transform,
+                comms: this.props.acsVersion == '7.1' ? 'none' : 'secret',
                 search: this.props.search,
+                secret: secretPassword,
                 share: this.props.share ? 'true' : 'false',
                 sync: this.props.sync ? 'true' : 'false',
                 adw: this.props.adw ? 'true' : 'false'
             }
         )
 
+        // Create temporary search-service yml description
+        if (this.props.search == 'search-service' || this.props.search == 'insight-engine') {
+            this.fs.copyTpl(
+                this.templatePath('services/' + this.props.search + '.yml'),
+                this.destinationPath('search-service.yml'), {
+                    comms: this.props.acsVersion == '7.1' ? 'none' : 'secret',
+                    secret: secretPassword
+                }
+            )
+        }
+
     }
 
+    // Building the final 'docker-compose.yml' replacing internal marks with services definition
     end() {
 
         if (this.props.share) {
-            replaceContent('# share', 'services/share.yml', this);
+            replaceContentTemplate('# share', 'services/share.yml', this);
         }
         
         if (this.props.sync) {
-            replaceContent('# sync-service', 'services/sync-service.yml', this);
+            replaceContentTemplate('# sync-service', 'services/sync-service.yml', this);
         }
 
         if (this.props.adw) {
-            replaceContent('# digital-workspace', 'services/digital-workspace.yml', this);
+            replaceContentTemplate('# digital-workspace', 'services/digital-workspace.yml', this);
         }
 
         if (this.props.transform == 't-engine') {
-            replaceContent('# transform-service', 'services/transform-engine.yml', this);
+            replaceContentTemplate('# transform-service', 'services/transform-engine.yml', this);
         }
 
         if (this.props.transform == 't-service') {
-            replaceContent('# transform-service', 'services/transform-service.yml', this);
-            replaceContent('# transform-volume', 'services/transform-service-volume.yml', this);
+            replaceContentTemplate('# transform-service', 'services/transform-service.yml', this);
+            replaceContentTemplate('# transform-volume', 'services/transform-service-volume.yml', this);
         }
         
-        if (this.props.search == 'search-service') {
-            replaceContent('# search-service', 'services/search-service.yml', this);
-        }
-
-        if (this.props.search == 'insight-engine') {            
-            replaceContent('# search-service', 'services/insight-engine.yml', this);
+        if (this.props.search == 'search-service' || this.props.search == 'insight-engine') {
+            replaceContentString('# search-service', fs.readFileSync('search-service.yml').toString());
+            fs.unlinkSync('search-service.yml');
         }
 
         if (this.props.zeppelin) {
-            replaceContent('# zeppelin', 'services/zeppelin.yml', this);
+            replaceContentTemplate('# zeppelin', 'services/zeppelin.yml', this);
         }
 
         if (this.props.search == 'search-enterprise') {            
-            replaceContent('# search-service', 'services/search-enterprise.yml', this);
+            replaceContentTemplate('# search-service', 'services/search-enterprise.yml', this);
             if (this.props.transform == 't-engine') {
                 this.log('WARNING: Search Enterprise will be indexing only metadata, since Transform Service is using T-Engine.');
                 this.log('To index also content, choose T-Service for Transform Service.');
@@ -158,11 +178,30 @@ module.exports = class extends Generator {
 
 };
 
-function replaceContent(replacementMark, templateFile, yo) {
+/**
+ * Replace content in docker-compose.yml file using a Template File
+ * @param replacementMark - The mark to be replaced (like '# search-service')
+ * @param templateFile - The name of the template file (like 'services/search-service.yml')
+ * @param yo - Yeoman Generator instance
+ */
+function replaceContentTemplate(replacementMark, templateFile, yo) {
 
     var dockerCompose = fs.readFileSync('docker-compose.yml').toString();
-    var share = yo.fs.read(yo.templatePath(templateFile));
-    dockerCompose = dockerCompose.replace(replacementMark, share);
+    var service = yo.fs.read(yo.templatePath(templateFile));
+    dockerCompose = dockerCompose.replace(replacementMark, service);
+    fs.writeFileSync('docker-compose.yml', dockerCompose);
+
+}
+
+/**
+ * Replace content in docker-compose.yml file using an input String
+ * @param replacementMark - The mark to be replaced (like '# search-service')
+ * @param service - The String including the service definition in yml
+ */
+function replaceContentString(replacementMark, service) {
+
+    var dockerCompose = fs.readFileSync('docker-compose.yml').toString();
+    dockerCompose = dockerCompose.replace(replacementMark, service);
     fs.writeFileSync('docker-compose.yml', dockerCompose);
 
 }
