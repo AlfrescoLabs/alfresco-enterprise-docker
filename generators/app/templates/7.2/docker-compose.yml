@@ -28,7 +28,7 @@ services:
         -Ddb.driver=org.postgresql.Driver
         -Ddb.username=alfresco
         -Ddb.password=alfresco
-        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco <% if (search == 'search-enterprise') { %>
+        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco <% if (search == 'search-enterprise-elasticsearch' || search == 'search-enterprise-opensearch') { %>
         -Delasticsearch.createIndexIfNotExists=true
         -Dindex.subsystem.name=elasticsearch
         -Delasticsearch.host=elasticsearch

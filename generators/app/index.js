@@ -44,8 +44,8 @@ var fs = require('fs');
             {
               type: 'list',
               name: 'search',
-              message: 'Do you want to use Search Service (SOLR 6), Insight Engine (SOLR 6 with SQL) or Search Enterprise (Elasticsearch) as search service?',
-              choices: [ 'search-service', 'insight-engine', 'search-enterprise' ],
+              message: 'Do you want to use Search Service (SOLR 6), Insight Engine (SOLR 6 with SQL) or Search Enterprise (with Elasticsearch or with OpenSearch) as search service?',
+              choices: [ 'search-service', 'insight-engine', 'search-enterprise-elasticsearch', 'search-enterprise-opensearch' ],
               default: 'search-service'
             },
             {
@@ -166,14 +166,22 @@ var fs = require('fs');
             replaceContentTemplate('# zeppelin', 'services/zeppelin.yml', this);
         }
 
-        if (this.props.search == 'search-enterprise') {            
-            replaceContentTemplate('# search-service', 'services/search-enterprise.yml', this);
+        if (this.props.search == 'search-enterprise-elasticsearch') {            
+            replaceContentTemplate('# search-service', 'services/search-enterprise-elasticsearch.yml', this);
             if (this.props.transform == 't-engine') {
                 this.log('WARNING: Search Enterprise will be indexing only metadata, since Transform Service is using T-Engine.');
                 this.log('To index also content, choose T-Service for Transform Service.');
             }
         }
       
+        if (this.props.search == 'search-enterprise-opensearch') {            
+            replaceContentTemplate('# search-service', 'services/search-enterprise-opensearch.yml', this);
+            if (this.props.transform == 't-engine') {
+                this.log('WARNING: Search Enterprise will be indexing only metadata, since Transform Service is using T-Engine.');
+                this.log('To index also content, choose T-Service for Transform Service.');
+            }
+        }
+
     }
 
 };

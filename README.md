@@ -92,7 +92,8 @@ Versions 7.1 and 7.2 are available
 
 * `search-service` is the Search Service used for Community Edition, relying on SOLR 6.6
 * `insight-engine` is a Search Service available for Enterprise Edition, relying on SOLR 6.6 *and* including support for SQL
-* `search-enterprise`  is a Search Service available for Enterprise Edition, relying on Elasticsearch (ActiveMQ is required)
+* `search-enterprise-elasticsearch` is a Search Service available for Enterprise Edition, relying on Elasticsearch (ActiveMQ is required)
+* `search-enterprise-opensearch` is a Search Service available for Enterprise Edition, relying on OpenSearch (ActiveMQ is required)
 
 ```
 ? Do you want to use Apache Zeppelin for Insight Engine? n
@@ -175,11 +176,11 @@ Default credentials
 * user: admin
 * password: admin
 
-http://localhost:9200 (Elasticsearch)
+http://localhost:9200 (Elasticsearch / OpenSearch)
 
 Default credentials: none
 
-http://localhost:5601 (Kibana)
+http://localhost:5601 (Kibana / OpenSearch Dashboards)
 
 Default credentials: none
 
