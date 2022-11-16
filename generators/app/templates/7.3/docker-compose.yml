@@ -1,0 +1,110 @@
+# This docker-compose file will spin up an ACS cluster on a local host or on a server and it requires a minimum of 13GB Memory to distribute among containers.
+#
+# For performance tuning, assign the container memory and give a percentage of it to the JVM.
+# Use either the -Xms,-Xmx flags or the newly added flags in java 10+: -XX:MaxRAMPercentage and -XX:MinRAMPercentage. More details here: https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html
+
+# Note: The docker-compose file from GitHub is a limited trial that goes into read-only mode after 2 days.
+# Get the latest docker-compose.yml file with a 30-day trial license by accessing the Alfresco Content Services trial download page at:
+# https://www.alfresco.com/platform/content-services-ecm/trial/download
+
+# Using version 2 as 3 does not support resource constraint options (cpu_*, mem_* limits) for non swarm mode in Compose
+version: "2"
+
+services:
+  alfresco:
+    image: quay.io/alfresco/alfresco-content-repository:${ALFRESCO_TAG}
+    environment:
+      JAVA_TOOL_OPTIONS: "
+        -Dencryption.keystore.type=JCEKS
+        -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
+        -Dencryption.keyAlgorithm=DESede
+        -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore
+        -Dmetadata-keystore.password=mp6yc0UD9e
+        -Dmetadata-keystore.aliases=metadata
+        -Dmetadata-keystore.metadata.password=oKIWzVdEdA
+        -Dmetadata-keystore.metadata.algorithm=DESede
+        "
+      JAVA_OPTS: "
+        -Ddb.driver=org.postgresql.Driver
+        -Ddb.username=alfresco
+        -Ddb.password=alfresco
+        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco <% if (search == 'search-enterprise-elasticsearch' || search == 'search-enterprise-opensearch') { %>
+        -Delasticsearch.createIndexIfNotExists=true
+        -Dindex.subsystem.name=elasticsearch
+        -Delasticsearch.host=elasticsearch
+        -Delasticsearch.indexName=${ELASTICSEARCH_INDEX_NAME} <% } else { %>
+        -Dsolr.host=solr6
+        -Dsolr.port=8983
+        -Dsolr.secureComms=<%=comms%><% if (comms == 'secret') { %>
+        -Dsolr.sharedSecret=<%=secret%> <% } %>
+        -Dsolr.base.url=/solr
+        -Dindex.subsystem.name=solr6 <% } %> <% if (share == 'true') { %>
+        -Dshare.host=127.0.0.1
+        -Dshare.port=8080 <% } %>
+        -Dalfresco.host=localhost
+        -Dalfresco.port=8080
+        -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
+        -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+        -Ddeployment.method=DOCKER_COMPOSE<% if (transform == 't-service') { %>
+        -Dtransform.service.enabled=true
+        -Dtransform.service.url=http://transform-router:8095
+        -Dsfs.url=http://shared-file-store:8099/ <% } %>
+        -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
+        -Dcsrf.filter.enabled=false<% if (sync == 'true') { %>
+        -Ddsync.service.uris=http://localhost:9090/alfresco <% } %>
+        -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+        "
+
+  # transform-service
+
+  # share
+
+  postgres:
+    image: postgres:${POSTGRES_TAG}
+    environment:
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+      - POSTGRES_DB=alfresco
+    command: postgres -c max_connections=300 -c log_min_messages=LOG
+    ports:
+      - "5432:5432"
+
+  # search-service
+
+  # zeppelin
+
+  activemq:
+    image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
+    ports:
+      - "8161:8161" # Web Console
+      - "5672:5672" # AMQP
+      - "61616:61616" # OpenWire
+      - "61613:61613" # STOMP
+
+  # digital-workspace
+
+  # control-center
+
+  proxy:
+    image: alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
+    depends_on:
+      - alfresco <% if (adw == 'true') { %>
+      - digital-workspace <% } %> <% if (admin == 'true') { %>
+      - control-center <% } %>
+    environment:  <% if (sync == 'false') { %>
+      - DISABLE_SYNCSERVICE=true <% } %>  <% if (adw == 'false') { %>
+      - DISABLE_ADW=true <% } %> <% if (admin == 'false') { %>
+      - DISABLE_CONTROL_CENTER=true <% } %> <% if (share == 'false') { %>
+      - DISABLE_SHARE=true <% } %>
+      - USE_SSL=false
+    ports:
+      - "8080:8080"
+    links: <% if (adw == 'true') { %>
+      - digital-workspace <% } %> <% if (admin == 'true') { %>
+      - control-center <% } %>
+      - alfresco <% if (share == 'true') { %>
+      - share <% } %>
+
+  # sync-service
+
+# transform-volume

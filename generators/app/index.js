@@ -31,8 +31,8 @@ var fs = require('fs');
                 type: 'list',
                 name: 'acsVersion',
                 message: 'Which ACS version do you want to use?',
-                choices: [ '7.1', '7.2' ],
-                default: '7.2'
+                choices: [ '7.1', '7.2', '7.3' ],
+                default: '7.3'
             },
             {
               type: 'list',
@@ -67,6 +67,15 @@ var fs = require('fs');
               type: 'confirm',
               name: 'adw',
               message: 'Do you want to use Alfresco Digital Workspace App?',
+              default: true
+            },
+            {
+              when: function (response) {
+                return response.acsVersion >= '7.3' || commandProps['acsVersion'] >= '7.3'
+              },
+              type: 'confirm',
+              name: 'admin',
+              message: 'Do you want to use Alfresco Admin App?',
               default: true
             },
             {
@@ -116,7 +125,8 @@ var fs = require('fs');
                 secret: secretPassword,
                 share: this.props.share ? 'true' : 'false',
                 sync: this.props.sync ? 'true' : 'false',
-                adw: this.props.adw ? 'true' : 'false'
+                adw: this.props.adw ? 'true' : 'false',
+                admin: this.props.admin ? 'true' : 'false'
             }
         )
 
@@ -146,6 +156,10 @@ var fs = require('fs');
 
         if (this.props.adw) {
             replaceContentTemplate('# digital-workspace', 'services/digital-workspace.yml', this);
+        }
+
+        if (this.props.admin) {
+            replaceContentTemplate('# control-center', 'services/control-center.yml', this);
         }
 
         if (this.props.transform == 't-engine') {

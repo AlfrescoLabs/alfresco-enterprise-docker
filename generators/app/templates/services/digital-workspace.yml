@@ -4,3 +4,4 @@ digital-workspace:
     environment:
       APP_CONFIG_AUTH_TYPE: "BASIC"
       BASE_PATH: ./
+      APP_BASE_SHARE_URL: "http://localhost:8080/workspace/#/preview/s"

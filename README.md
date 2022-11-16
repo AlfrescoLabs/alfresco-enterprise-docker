@@ -74,10 +74,10 @@ $ yo alfresco-enterprise-docker
 Several options are provided in order to build the configuration.
 
 ```
-? Which ACS version do you want to use? 7.2
+? Which ACS version do you want to use? 7.3
 ```
 
-Versions 7.1 and 7.2 are available
+Versions 7.1, 7.2 and 7.3 are available
 
 ```
 ? Do you want to use T-Engine (sync) or T-Service (async) as transform service? t-engine
@@ -114,6 +114,12 @@ Deploy the legacy Share UI (built with FreeMarker, Springsurf and Aikau)
 Deploy the current ADW UI (built with Angular)
 
 ```
+? Do you want to use Alfresco Admin App? Y
+```
+
+Deploy the Control Center app for Alfresco Authorities (built with Angular)
+
+```
 ? Do you want to use Sync Service? N
 ```
 
@@ -125,6 +131,7 @@ Deploy Sync Service to support Desktop Sync application
 * [Repository](https://docs.alfresco.com/content-services/latest/): [alfresco-content-repository](https://quay.io/alfresco/alfresco-content-repository)
 * [Share](https://docs.alfresco.com/content-services/latest/using/share/): [alfresco-share](https://quay.io/alfresco/alfresco-share)
 * [Digital Workspace](https://docs.alfresco.com/digital-workspace/latest/): [alfresco-digital-workspace](https://quay.io/alfresco/alfresco-digital-workspace)
+* [Control Center](https://docs.alfresco.com/digital-workspace/latest/): [alfresco-digital-workspace](https://quay.io/alfresco/alfresco-admin-app)
 * [Search](https://docs.alfresco.com/search-services/latest/): [alfresco-search-services](https://hub.docker.com/r/alfresco/alfresco-search-services)
 * [Insight Engine](https://docs.alfresco.com/insight-engine/latest/): [insight-engine](https://quay.io/alfresco/insight-engine)
 * [Zeppelin](https://docs.alfresco.com/insight-engine/latest/using/): [insight-zeppelin](https://quay.io/alfresco/insight-zeppelin)
@@ -136,7 +143,13 @@ Deploy Sync Service to support Desktop Sync application
 
 *Default URLs*
 
-http://localhost:8080 (ADW)
+http://localhost:8080/workspace (ADW)
+
+Default credentials
+* user: admin
+* password: admin
+
+http://localhost:8080/admin (Control Center)
 
 Default credentials
 * user: admin
