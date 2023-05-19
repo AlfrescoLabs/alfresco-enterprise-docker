@@ -31,8 +31,8 @@ var fs = require('fs');
                 type: 'list',
                 name: 'acsVersion',
                 message: 'Which ACS version do you want to use?',
-                choices: [ '7.1', '7.2', '7.3' ],
-                default: '7.3'
+                choices: [ '7.1', '7.2', '7.3', '7.4' ],
+                default: '7.4'
             },
             {
               type: 'list',
