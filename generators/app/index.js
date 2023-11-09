@@ -2,6 +2,7 @@
 const Generator = require('yeoman-generator');
 var banner = require('./banner');
 var fs = require('fs');
+var compare = require('compare-versions').compare;
 
 /**
  * This module provides a Yeoman Generator to produce 'docker-compose.yml' 
@@ -31,8 +32,8 @@ var fs = require('fs');
                 type: 'list',
                 name: 'acsVersion',
                 message: 'Which ACS version do you want to use?',
-                choices: [ '7.1', '7.2', '7.3', '7.4' ],
-                default: '7.4'
+                choices: [ '7.1', '7.2', '7.3', '7.4', '23.1' ],
+                default: '23.1'
             },
             {
               type: 'list',
@@ -71,7 +72,8 @@ var fs = require('fs');
             },
             {
               when: function (response) {
-                return response.acsVersion >= '7.3' || commandProps['acsVersion'] >= '7.3'
+                var version = response.acsVersion ? response.acsVersion : commandProps['acsVersion'];
+                return compare(version, '7.3', '>=')
               },
               type: 'confirm',
               name: 'admin',

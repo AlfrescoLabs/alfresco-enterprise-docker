@@ -1,6 +1,6 @@
 {
   "name": "generator-alfresco-enterprise-docker",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Docker Compose template generator for Alfresco Enterprise",
   "main": "index.js",
   "repository": {
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/AlfrescoLabs/alfresco-enterprise-docker#readme",
   "dependencies": {
+    "compare-versions": "^6.1.0",
     "yeoman-generator": "^5.6.1"
   }
 }
