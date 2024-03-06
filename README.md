@@ -74,10 +74,10 @@ $ yo alfresco-enterprise-docker
 Several options are provided in order to build the configuration.
 
 ```
-? Which ACS version do you want to use? 7.4
+? Which ACS version do you want to use? 23.2
 ```
 
-Versions 7.1, 7.2, 7.3 and 7.4 are available
+Versions 7.1, 7.2, 7.3, 7.4, 23.1 and 23.2 are available
 
 ```
 ? Do you want to use T-Engine (sync) or T-Service (async) as transform service? t-engine
