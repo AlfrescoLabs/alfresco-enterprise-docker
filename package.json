@@ -1,6 +1,6 @@
 {
   "name": "generator-alfresco-enterprise-docker",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Docker Compose template generator for Alfresco Enterprise",
   "main": "index.js",
   "repository": {
