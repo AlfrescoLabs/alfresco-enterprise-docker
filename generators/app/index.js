@@ -32,8 +32,8 @@ var compare = require('compare-versions').compare;
                 type: 'list',
                 name: 'acsVersion',
                 message: 'Which ACS version do you want to use?',
-                choices: [ '7.1', '7.2', '7.3', '7.4', '23.1', '23.2', '23.4', '25.1', '25.3' ],
-                default: '25.3'
+                choices: [ '7.1', '7.2', '7.3', '7.4', '23.1', '23.2', '23.4', '25.1', '25.3', '26.1' ],
+                default: '26.1'
             },
             {
               type: 'list',
