@@ -33,6 +33,8 @@ services:
         -Dalfresco.port=8080
         -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
         -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+        -Dmessaging.broker.username=${ACTIVEMQ_USER}
+        -Dmessaging.broker.password=${ACTIVEMQ_PASSWORD}
         -Ddeployment.method=DOCKER_COMPOSE<% if (transform == 't-service') { %>
         -Dtransform.service.enabled=true
         -Dtransform.service.url=http://transform-router:8095
@@ -63,6 +65,9 @@ services:
 
   activemq:
     image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: "${ACTIVEMQ_USER}"
+      ACTIVEMQ_ADMIN_PASSWORD: "${ACTIVEMQ_PASSWORD}"
     ports:
       - "8161:8161" # Web Console
       - "5672:5672" # AMQP

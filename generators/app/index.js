@@ -85,6 +85,26 @@ var compare = require('compare-versions').compare;
               name: 'sync',
               message: 'Do you want to use Sync Service?',
               default: false
+            },
+            {
+              when: function (response) {
+                var version = response.acsVersion ? response.acsVersion : commandProps['acsVersion'];
+                return requiresActiveMqCredentials(version);
+              },
+              type: 'input',
+              name: 'activeMqUser',
+              message: 'Choose the USERNAME for your ActiveMQ user',
+              default: 'admin'
+            },
+            {
+              when: function (response) {
+                var version = response.acsVersion ? response.acsVersion : commandProps['acsVersion'];
+                return requiresActiveMqCredentials(version);
+              },
+              type: 'input',
+              name: 'activeMqPassword',
+              message: 'Choose the PASSWORD for your ActiveMQ user',
+              default: 'password'
             }
         ]
         
@@ -104,6 +124,7 @@ var compare = require('compare-versions').compare;
         return this.prompt(filteredPrompts).then(props => {
             this.props = props;
             Object.assign(props, commandProps);
+            applyDerivedDefaults(props);
         });
 
     }
@@ -113,7 +134,11 @@ var compare = require('compare-versions').compare;
 
         this.fs.copyTpl(
             this.templatePath(this.props.acsVersion + '/.env'),
-            this.destinationPath('.env')
+            this.destinationPath('.env'),
+            {
+                activeMqUser: this.props.activeMqUser,
+                activeMqPassword: this.props.activeMqPassword
+            }
         )
 
         var secretPassword = Math.random().toString(36).slice(2);
@@ -148,12 +173,17 @@ var compare = require('compare-versions').compare;
     // Building the final 'docker-compose.yml' replacing internal marks with services definition
     end() {
 
+        const syncTemplate = getServiceTemplate('sync-service.yml', this.props);
+        const transformTemplate = getServiceTemplate('transform-service.yml', this.props);
+        const elasticsearchTemplate = getServiceTemplate('search-enterprise-elasticsearch.yml', this.props);
+        const opensearchTemplate = getServiceTemplate('search-enterprise-opensearch.yml', this.props);
+
         if (this.props.share) {
             replaceContentTemplate('# share', 'services/share.yml', this);
         }
         
         if (this.props.sync) {
-            replaceContentTemplate('# sync-service', 'services/sync-service.yml', this);
+            replaceContentTemplate('# sync-service', syncTemplate, this);
         }
 
         if (this.props.adw) {
@@ -169,7 +199,7 @@ var compare = require('compare-versions').compare;
         }
 
         if (this.props.transform == 't-service') {
-            replaceContentTemplate('# transform-service', 'services/transform-service.yml', this);
+            replaceContentTemplate('# transform-service', transformTemplate, this);
             replaceContentTemplate('# transform-volume', 'services/transform-service-volume.yml', this);
         }
         
@@ -183,7 +213,7 @@ var compare = require('compare-versions').compare;
         }
 
         if (this.props.search == 'search-enterprise-elasticsearch') {            
-            replaceContentTemplate('# search-service', 'services/search-enterprise-elasticsearch.yml', this);
+            replaceContentTemplate('# search-service', elasticsearchTemplate, this);
             if (this.props.transform == 't-engine') {
                 this.log('WARNING: Search Enterprise will be indexing only metadata, since Transform Service is using T-Engine.');
                 this.log('To index also content, choose T-Service for Transform Service.');
@@ -191,7 +221,7 @@ var compare = require('compare-versions').compare;
         }
       
         if (this.props.search == 'search-enterprise-opensearch') {            
-            replaceContentTemplate('# search-service', 'services/search-enterprise-opensearch.yml', this);
+            replaceContentTemplate('# search-service', opensearchTemplate, this);
             if (this.props.transform == 't-engine') {
                 this.log('WARNING: Search Enterprise will be indexing only metadata, since Transform Service is using T-Engine.');
                 this.log('To index also content, choose T-Service for Transform Service.');
@@ -228,5 +258,27 @@ function replaceContentString(replacementMark, service) {
     dockerCompose = dockerCompose.replace(replacementMark, service);
     fs.writeFileSync('docker-compose.yml', dockerCompose);
 
+}
+
+function requiresActiveMqCredentials(acsVersion) {
+    return !!acsVersion && compare(acsVersion, '26.1', '>=');
+}
+
+function usesActiveMqCredentials(props) {
+    return requiresActiveMqCredentials(props.acsVersion);
+}
+
+function applyDerivedDefaults(props) {
+    if (usesActiveMqCredentials(props)) {
+        props.activeMqUser = props.activeMqUser || 'admin';
+        props.activeMqPassword = props.activeMqPassword || 'password';
+    }
+}
+
+function getServiceTemplate(templateFile, props) {
+    if (usesActiveMqCredentials(props)) {
+        return 'services/26.1/' + templateFile;
+    }
+    return 'services/' + templateFile;
 }
   

@@ -95,6 +95,8 @@ Versions 7.1, 7.2, 7.3, 7.4, 23.1, 23.2, 23.4, 25.1, 25.3 and 26.1 are available
 * `search-enterprise-elasticsearch` is a Search Service available for Enterprise Edition, relying on Elasticsearch (ActiveMQ is required)
 * `search-enterprise-opensearch` is a Search Service available for Enterprise Edition, relying on OpenSearch (ActiveMQ is required)
 
+Starting with ACS 26.1, the generated stack also prompts for ActiveMQ username and password because `alfresco/alfresco-activemq:6.2.1-jre17-rockylinux8` requires authenticated connections. The default values are `admin` / `password`.
+
 ```
 ? Do you want to use Apache Zeppelin for Insight Engine? n
 ```
@@ -181,7 +183,7 @@ Default credentials
 
 http://localhost:8161 (ActiveMQ)
 
-Default credentials: none
+Default credentials: none on older releases, or the username and password chosen during generation for ACS 26.1+
 
 http://localhost:9091/zeppelin (Zeppelin)
 
